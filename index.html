@@ -1,0 +1,114 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="initial-scale=1,user-scalable=no,maximum-scale=1,width=device-width">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <link rel="stylesheet" href="./resources/ol.css">
+    <link rel="stylesheet" href="resources/fontawesome-all.min.css">
+    <link rel="stylesheet" type="text/css" href="resources/horsey.min.css">
+    <link rel="stylesheet" type="text/css" href="resources/ol3-search-layer.min.css">
+    <link href="resources/ol-geocoder.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="./resources/ol-layerswitcher.css">
+    <link rel="stylesheet" href="./resources/qgis2web.css">
+    <style>
+        html, body {
+            background-color: #ffffff;
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+        }
+        .ol-control > * {
+            background-color: #f8f8f8 !important;
+            color: #444444 !important;
+            border-radius: 0px;
+        }
+        .ol-popup {
+            position: absolute;
+            background: white;
+            padding: 10px;
+            border: 1px solid #ccc;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+            max-width: 90vw;
+            max-height: 90vh;
+            z-index: 1000;
+            pointer-events: auto;
+        }
+        #popup-content {
+            overflow: auto;
+        }
+        html, body, #map {
+            width: 100%;
+            height: 100%;
+            padding: 0;
+            margin: 0;
+        }
+    </style>
+    <title>Map Popup</title>
+</head>
+<body>
+    <div id="map">
+        <div id="popup" class="ol-popup">
+            <a href="#" id="popup-closer" class="ol-popup-closer">Close</a>
+            <div id="popup-content"></div>
+        </div>
+    </div>
+
+    <script src="resources/qgis2web_expressions.js"></script>
+    <script src="resources/proj4.js"></script>
+    <script>
+        proj4.defs('EPSG:4326','+proj=longlat +datum=WGS84 +no_defs');
+    </script>
+    <script src="./resources/functions.js"></script>
+    <script src="./resources/ol.js"></script>
+    <script src="resources/horsey.min.js"></script>
+    <script src="resources/ol3-search-layer.js"></script>
+    <script src="./resources/ol-layerswitcher.js"></script>
+    <script src="resources/ol-geocoder.js"></script>
+    <script src="layers/ADMINISTRASIKECAMATAN_AR_50K_0.js"></script>
+    <script src="layers/PipaEksisting_1.js"></script>
+    <script src="layers/BANGUNAN_PELANGGAN_2.js"></script>
+    <script src="styles/ADMINISTRASIKECAMATAN_AR_50K_0_style.js"></script>
+    <script src="styles/PipaEksisting_1_style.js"></script>
+    <script src="styles/BANGUNAN_PELANGGAN_2_style.js"></script>
+    <script src="./layers/layers.js" type="text/javascript"></script>
+    <script src="./resources/Autolinker.min.js"></script>
+    <script src="./resources/qgis2web.js"></script>
+
+    <script>
+        // Initialize map and popup overlay
+        const popup = new ol.Overlay({
+            element: document.getElementById('popup'),
+            autoPan: true,
+            autoPanAnimation: {
+                duration: 250
+            }
+        });
+        map.addOverlay(popup);
+
+        // Add a click event listener for the map
+        map.on('singleclick', function (evt) {
+            const feature = map.forEachFeatureAtPixel(evt.pixel, function (feature) {
+                return feature;
+            });
+            // Show popup only for features in "Bangunan Pelanggan" layer
+            if (feature && feature.get('layerName') === 'BANGUNAN_PELANGGAN') { // Adjust layer name if needed
+                const content = document.getElementById('popup-content');
+                content.innerHTML = '<p>Detail:</p><code>' + JSON.stringify(feature.getProperties()) + '</code>'; // Display all properties
+                popup.setPosition(evt.coordinate); // Position popup at the click
+            } else {
+                popup.setPosition(undefined); // Hide popup if clicked outside a feature
+            }
+        });
+
+        // Close the popup when the "close" button is clicked
+        document.getElementById('popup-closer').onclick = function () {
+            popup.setPosition(undefined);
+            return false;
+        };
+    </script>
+</body>
+</html>
